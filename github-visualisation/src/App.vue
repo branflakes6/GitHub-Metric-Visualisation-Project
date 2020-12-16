@@ -1,13 +1,13 @@
 <template>
   <div id="app">    
-    <Visualiser msg="GitHub API Visualiser"/>
+    <Visualiser/>
     <img alt="Orangutan" src="./assets/Orangutan.png" contain height ="60px" width = "60px">
   </div>
 </template>
 
+
 <script>
 import Visualiser from './components/Visualiser.vue'
-
 export default {
   name: 'App',
   components: {
