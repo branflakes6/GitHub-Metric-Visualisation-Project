@@ -1,17 +1,17 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="app">    
+    <Visualiser msg="GitHub API Visualiser"/>
+    <img alt="Orangutan" src="./assets/Orangutan.png" contain height ="60px" width = "60px">
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Visualiser from './components/Visualiser.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    Visualiser
   }
 }
 </script>
