@@ -5,20 +5,27 @@
       <p>Search GitHub for {{ message }} ?</p>  
       <button v-on:click="searchBtn">Yes!</button>
       <p>Searching for {{searchTerm}}</p>
+      <div>  
+        {{info}}
+      </div>
   
     </div>
 </template>
 
+
 <script>
+import axios from "axios";
 export default {
   name: 'Visualiser',
    methods: {
     searchBtn : function() {
       this.searchTerm = this.message
+      axios.get(`https://api.github.com/users/${this.searchTerm}`)
+      .then(respone => (this.info = respone))
     }
   },
   data () {
-    return{message: "", searchTerm:""
+    return{message: "", searchTerm:"", info: null
     }
   }
  
