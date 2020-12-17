@@ -8,7 +8,6 @@
       <div>  
         {{info}}
       </div>
-  
     </div>
 </template>
 
@@ -20,15 +19,17 @@ export default {
    methods: {
     searchBtn : function() {
       this.searchTerm = this.message
-      axios.get(`https://api.github.com/users/${this.searchTerm}`)
+      axios.get(`https://api.github.com/users/${this.searchTerm}`, {
+        headers: {
+          authorization: "token " + process.env.VUE_APP_API_KEY
+        }
+      })
       .then(respone => (this.info = respone))
     }
   },
   data () {
     return{message: "", searchTerm:"", info: null
     }
-  }
- 
+  } 
 }
-
 </script>
