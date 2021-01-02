@@ -6,8 +6,10 @@
       <p>Search GitHub for {{ message }} ?</p>  
       <button v-on:click="searchBtn">Yes!</button>
       <p>Searching for {{searchTerm}}</p>
-
-      <v-img max-width="500px" :src = avatar> </v-img>
+      <v-card-title class="justify-center">
+      <v-img max-width="200px" :src = avatar align="center"> </v-img>
+      </v-card-title>
+      <v-img maxwidth="200px" :src="userCard"> </v-img>
       </v-container>
       <div>  
         {{info}}
@@ -35,14 +37,17 @@ export default {
     },
     getData() {
       this.avatar = this.info.data.avatar_url
-      console.log(this.avatar)    
+      this.userCard = "https://github-readme-stats.vercel.app/api?username=" + this.searchTerm;
+      console.log(this.info.data.repos_url)    
   }
   }, 
   data: () => ({
       message: "", 
       searchTerm:"", 
       info: null,
-      avatar:""
+      avatar:"",
+      userCard:"",
+      commits: []
   })
 }
 </script>
