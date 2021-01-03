@@ -11,7 +11,7 @@
       </v-card-title>
       <v-img maxwidth="200px" :src="userCard"> </v-img>
       <div>
-        <column-chart :data="test"></column-chart>
+        <column-chart :data="languages"></column-chart>
       </div>
       </v-container>
       <div>  
@@ -46,21 +46,46 @@ export default {
       console.log(this.info.data.repos_url)    
     },
     getLanguageData() {
-      this.test  = []
-      this.test.push(["A", 3])
-      this.test.push(["b", 2])
-      this.test.push(["c", 1])
-    }
-  }, 
+      this.languages  = []
+      this.languages.push(["A", 3])
+      this.languages.push(["b", 2])
+      this.languages.push(["c", 1])
+
+       axios.get(`https://api.github.com/users/${this.searchTerm}/repos`, {
+         headers: {
+           authorization: "token " + process.env.VUE_APP_API_KEY
+        }
+       })
+         .then(respone => {
+           this.repoInfo = respone
+           this.languages = []
+          for (let i = 0; i < this.repoInfo.data.length; i++) {
+          if(!this.languages.some(row => row.includes(this.repoInfo.data[i].language)))
+          {
+            this.languages.push([this.repoInfo.data[i].language,1])
+          }
+          else{
+            for(let j = 0; j < this.languages.length; j++)
+            {
+              if(this.languages[j][0] == this.repoInfo.data[i].language)
+              {
+                this.languages[j][1] = this.languages[j][1] + 1
+              }
+            }
+          }
+        }
+        })
+  }
+  },
   data: () => ({
       message: "", 
       searchTerm:"", 
       info: null,
+      repoInfo: null,
       avatar:"",
       userCard:"",
       commits: [],
-      languages: [],
-      test: [["A", 1],["B", 2],["C", 3]]
+      languages: []
   })
 }
 </script>
