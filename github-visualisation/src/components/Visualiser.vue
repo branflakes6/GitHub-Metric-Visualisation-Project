@@ -10,6 +10,9 @@
       <v-img max-width="200px" :src = avatar align="center"> </v-img>
       </v-card-title>
       <v-img maxwidth="200px" :src="userCard"> </v-img>
+      <div>
+        <column-chart :data="test"></column-chart>
+      </div>
       </v-container>
       <div>  
         {{info}}
@@ -25,6 +28,7 @@ export default {
    methods: {
     searchBtn : function() {
       this.searchTerm = this.message
+      this.getLanguageData()
       axios.get(`https://api.github.com/users/${this.searchTerm}`, {
         headers: {
           authorization: "token " + process.env.VUE_APP_API_KEY
@@ -33,13 +37,20 @@ export default {
       .then(respone => {
       this.info = respone
       this.getData()
+      this.getLanguageData()
       })
     },
     getData() {
       this.avatar = this.info.data.avatar_url
       this.userCard = "https://github-readme-stats.vercel.app/api?username=" + this.searchTerm;
       console.log(this.info.data.repos_url)    
-  }
+    },
+    getLanguageData() {
+      this.test  = []
+      this.test.push(["A", 3])
+      this.test.push(["b", 2])
+      this.test.push(["c", 1])
+    }
   }, 
   data: () => ({
       message: "", 
@@ -47,7 +58,9 @@ export default {
       info: null,
       avatar:"",
       userCard:"",
-      commits: []
+      commits: [],
+      languages: [],
+      test: [["A", 1],["B", 2],["C", 3]]
   })
 }
 </script>
