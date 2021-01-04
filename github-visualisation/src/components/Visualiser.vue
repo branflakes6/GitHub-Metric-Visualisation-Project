@@ -9,7 +9,7 @@
       <v-card-title class="justify-center">
       <v-img max-width="200px" :src = avatar align="center"> </v-img>
       </v-card-title>
-      <v-img maxwidth="200px" :src="userCard"> </v-img>
+      <v-img max-width="800px" :src="userCard"> </v-img>
       <div>
         <p> Top Languages by Number of Repos </p>
         <column-chart :data="languages"></column-chart>
@@ -18,15 +18,23 @@
         <p> Top Languages by Number of commits </p>
         <column-chart :data="commits"></column-chart>
       </div>
+      <div>
+        <p> Heres a heatmap for you to look at </p>
+        <vuejs-heatmap :selector="'OogaBooga'" :entries="calendar" :locale="locale" :colorRange="colors" :max="50"  ></vuejs-heatmap> 
+      </div>
       </v-container>
     </div>
 </template>
 
-
 <script>
+
 import axios from "axios";
+import VuejsHeatmap from 'vuejs-heatmap'
 export default {
   name: 'Visualiser',
+  components: {
+     VuejsHeatmap
+    },
    methods: {
     searchBtn : function() {
       this.searchTerm = this.message
@@ -38,14 +46,15 @@ export default {
       .then(respone => {
       this.info = respone
       this.getData()
-      this.getLanguageData()
+      //this.getLanguageData()
+      this.getContributions()
       
       })
     },
     getData() {
       this.avatar = this.info.data.avatar_url
       this.userCard = "https://github-readme-stats.vercel.app/api?username=" + this.searchTerm;
-      console.log(this.info.data.repos_url)    
+      //console.log(this.info.data.repos_url)    
     },
     getLanguageData() {
        axios.get(`https://api.github.com/users/${this.searchTerm}/repos?per_page=100`, {
@@ -116,6 +125,46 @@ export default {
          }
         })
       }
+    },
+    async getContributions() {
+      console.log("here")
+          const headers = {
+          'Authorization': `bearer ${process.env.VUE_APP_API_KEY}`,
+          }
+      const body = {
+          "query": `query {
+              user(login: "${this.searchTerm}") {
+                name
+                contributionsCollection {
+                  contributionCalendar {
+                    colors
+                    totalContributions
+                    weeks {
+                      contributionDays {
+                        color
+                        contributionCount
+                        date
+                        weekday
+                      }
+                      firstDay
+                    }
+                  }
+                }
+              }
+            }`
+      }
+    const response = await fetch('https://api.github.com/graphql', { method: 'POST', body: JSON.stringify(body), headers: headers })
+    const data = await response.json()
+    this.weeks = data.data.user.contributionsCollection.contributionCalendar.weeks
+    this.calendar = []
+    for(let i = 0; i < this.weeks.length; i++)
+    {
+      for (let j = 0; j < this.weeks[i].contributionDays.length; j++){
+          this.calendar.push( {counting: this.weeks[i].contributionDays[j].contributionCount, created_at: this.weeks[i].contributionDays[j].date})
+      }
+      
+    }
+    console.log(this.calendar)
     }
    },
   data: () => ({
@@ -127,7 +176,18 @@ export default {
       userCard:"",
       commits: [],
       languages: [],
-      currentRepoCommits:""
+      currentRepoCommits:"",
+      week: [],
+      calendar: [],
+      colors: ['#c9ecec', '#09b3af'],
+      locale: {
+        months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        days: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+        No: 'No',
+        on: 'on',
+        Less: 'Less',
+        More: 'More'
+      }
   })
 }
 </script>
