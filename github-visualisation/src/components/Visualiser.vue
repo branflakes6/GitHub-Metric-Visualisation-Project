@@ -81,7 +81,6 @@
        </v-card>
       </v-container>
     </div>
-  
 </template>
 
 <script>
@@ -107,18 +106,19 @@ export default {
       .then(respone => {
       this.info = respone
 
-      console.log(this.info)
-      this.getData()
-      this.getEvents()
-      this.getLanguageData()
-      this.getContributions()
-      this.getNetwork()
+      //console.log(this.info)
+      //this.getData()
+      this.getEvents(1)
+      //this.getLanguageData()
+      //this.getContributions()
+      //this.getNetwork()
       
       })
     },
     getData() {
       this.avatar = this.info.data.avatar_url
       this.userCard = "https://github-readme-stats.vercel.app/api?username=" + this.searchTerm;
+      this.scatter = []
     },
     getLanguageData() {
        axios.get(`https://api.github.com/users/${this.searchTerm}/repos?per_page=100`, {
@@ -149,27 +149,34 @@ export default {
         this.getCommitData()
       })
   },
-  getEvents() {
-    this.pageNum = 0
-    this.scatter = []
-  for(let i = 0; i < 10; i++) {
-    this.pageNum = this.pageNum + 1
-    axios.get(`https://api.github.com/users/${this.searchTerm}/events?page=${this.pageNum}`, {
+  getEvents(pageNum) {
+   
+  //for(let i = 0; i < 10; i++) {
+    //this.pageNum = pageNum + 1
+    axios.get(`https://api.github.com/users/${this.searchTerm}/events?per_page=100&page=${pageNum}`, {
          headers: {
            authorization: "token " + process.env.VUE_APP_API_KEY
         }, timeout:10000
        })
        .then (response => {
+         console.log(response)
          for( let j = 0; j < response.data.length; j++) {
-          
+            
             this.date = new Date (response.data[j].created_at)
             this.day = this.date.getDay()
             this.hours = this.date.getHours()
             this.time = this.date.getHours() + '.' + this.date.getMinutes() + '.' + this.date.getSeconds()
             this.scatter.push([this.time, this.day,])
+            
          }
+         console.log(this.scatter)
+       if(response.data.length >= 100)
+       {
+         this.getEvents(pageNum + 1)
+       }
        })
-    }
+       
+    //}
   },
   getCommitData() {
         this.commits = []
@@ -305,7 +312,7 @@ export default {
       time: '',
       date: '',
       loop: false,
-      pageNum: 1,
+     // pageNum: 1,
       pageSize: 0,
       searchTerm:"", 
       info: null,
