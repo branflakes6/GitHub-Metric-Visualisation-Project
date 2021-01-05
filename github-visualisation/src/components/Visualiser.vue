@@ -1,16 +1,19 @@
 <template> 
- 
+  <v-app>
     <div id="Visualiser">
       <h1> GitHub API Visualiser </h1>
       
       <v-container>
+        
         <v-row align="center" justify="center">
          <v-col></v-col>
           <v-col>
-          <p> Enter a user name to search for:
+          <p> Enter a user name to search for:  </p>
             <v-text-field v-model="message" placeholder="userName" > </v-text-field>
-          </p>
-            <v-btn v-on:click="searchBtnRepo" elevation="1">Search</v-btn>
+           
+               <v-select data-app :items="items" v-model="select" label="Users or Repos"> </v-select>  
+             
+           <v-btn v-on:click="searchBtn" elevation="1">Search</v-btn>
         </v-col>
           <v-col></v-col>
        </v-row>
@@ -89,6 +92,7 @@
        <pie-chart :data="topFive"></pie-chart>
      </v-container>
     </div>
+    </v-app>
 </template>
 
 <script>
@@ -103,9 +107,22 @@ export default {
      D3Network
     },
    methods: {
-    searchBtnUser : function() {
+     searchBtn : function() {
+       this.searchTerm = this.message
+       console.log(this.select)
+       if(this.select == "Users")
+       {
+         this.searchBtnUser()
+       }
+       else if (this.select == "Repositories")
+       {
+         this.searchBtnRepo()
+       }
+     },
+    searchBtnUser () {
       this.searchTerm = this.message
       this.display = true
+      this.drawRepo = false
       this.scatter = []
         axios.get(`https://api.github.com/users/${this.searchTerm}`, {
         headers: {
@@ -122,9 +139,10 @@ export default {
       
       })
     },
-    searchBtnRepo : function () {
+    searchBtnRepo () {
       this.searchTerm = this.message
       this.drawRepo = true
+      this.display = false
       this.allCons = []
       this.consOverTime = []
        axios.get(`https://api.github.com/repos/${this.searchTerm}`, {
@@ -148,12 +166,13 @@ export default {
         }
       }).then (response => {
         let allCommits = response
-         //console.log(allCommits)
+         console.log(allCommits)
         for(let i = 0; i < allCommits.data.length; i++) {
    
           if(allCommits.data[i].author != null) {
             if(!this.allCons.some(row => row.includes(allCommits.data[i].author.login))) {
-              this.allCons.push([allCommits.data[i].author.login, 1])
+              console.log(allCommits.data[i].author.avatar_url)
+              this.allCons.push([allCommits.data[i].author.login, 1, allCommits.data[i].author.avatar_url])
               //let date = new Date(allCommits.data[i].commit.author.date)
               //this.consOverTime.push({name: allCommits.data[i].author.login, data: {date: date.getFullYear() + '-' + (date.getMonth()+1) + '-'+ date.getDate()}})
             }
@@ -182,22 +201,12 @@ export default {
          this.getTopFive()
       })
     },
-    // getTopFive() {
-    //   this.topFive = []
-    //     for(let i = 0; i < 3 || this.allCons.length; i++) {
-    //       this.topFive[i] = this.allCons[i]
-    //     }
-    //     for(let i = 0; i < this.topFive.length; i++) {
-    //       axios.get(`https://api.github.com/users/${this.topFive[i]}`, {
-    //     headers: {
-    //       authorization: "token " + process.env.VUE_APP_API_KEY
-    //     }
-    //   }) .then (response => {
-    //     console.log(response)
-    //       //this.topFivePics.push(response)
-    //   }) 
-    //   }
-    // },
+    getTopFive() {
+      this.topFive = []
+        for(let i = 0; i < 3 && i < this.allCons.length; i++) {
+          this.topFive[i] = this.allCons[i]
+        }    
+    },
     getLocationData() {
       this.locations = []
 
@@ -386,6 +395,7 @@ export default {
   data: () => ({
       message: "",
       display: false,
+      select: "",
       drawRepo: false,
       followers: [],
       secondDegree: [],
@@ -410,6 +420,7 @@ export default {
       commits: [],
       languages: [],
       currentRepoCommits:"",
+      items: ["Users", "Repositories" ],
       week: [],
       calendar: [],
       colors: ['#f9fcf8', '#4cbc19'],
