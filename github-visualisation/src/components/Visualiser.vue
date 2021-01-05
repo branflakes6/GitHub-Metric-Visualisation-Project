@@ -9,7 +9,7 @@
          <v-col></v-col>
           <v-col>
           <p> Enter a user name to search for:  </p>
-            <v-text-field v-model="message" placeholder="userName" > </v-text-field>
+            <v-text-field v-model="message" placeholder="userName or userName/repoName" > </v-text-field>
            
                <v-select data-app :items="items" v-model="select" label="Users or Repos"> </v-select>  
              
@@ -85,16 +85,35 @@
       </v-container>
 
      <v-container v-if="drawRepo">
-       <column-chart :data="allCons"></column-chart>
-       <pie-chart :data="allCons"></pie-chart>
 
+       <line-chart :data="consOverTime" :borderDash="12"></line-chart>
+      <v-row>
+        <v-col>
+       <column-chart :data="allCons"></column-chart>
+        </v-col>
+        <v-col>
+       <pie-chart :data="allCons" :donut="true"></pie-chart>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col>
       <column-chart :data="topFive"></column-chart>
-       <pie-chart :data="topFive"></pie-chart>
+        </v-col>
+        <v-col>
+       <pie-chart :data="topFive" :donut="true"></pie-chart>
+        </v-col>
+      </v-row>
+      <geo-chart></geo-chart>
      </v-container>
     </div>
     </v-app>
 </template>
 
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"> 
+     </script>
+     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script>
 
 import axios from "axios";
@@ -109,7 +128,6 @@ export default {
    methods: {
      searchBtn : function() {
        this.searchTerm = this.message
-       console.log(this.select)
        if(this.select == "Users")
        {
          this.searchBtnUser()
@@ -154,7 +172,7 @@ export default {
         this.info = response
         //console.log(this.info)
         this.getTopCons(1)
-        console.log(this.allCons)
+        //console.log(this.allCons)
         //console.log(this.consOverTime)
 
       })
@@ -166,15 +184,33 @@ export default {
         }
       }).then (response => {
         let allCommits = response
-         console.log(allCommits)
+         //console.log(allCommits)
+         let data = {}
         for(let i = 0; i < allCommits.data.length; i++) {
-   
+          
           if(allCommits.data[i].author != null) {
             if(!this.allCons.some(row => row.includes(allCommits.data[i].author.login))) {
-              console.log(allCommits.data[i].author.avatar_url)
+              //console.log(allCommits.data[i].author.avatar_url)
               this.allCons.push([allCommits.data[i].author.login, 1, allCommits.data[i].author.avatar_url])
-              //let date = new Date(allCommits.data[i].commit.author.date)
-              //this.consOverTime.push({name: allCommits.data[i].author.login, data: {date: date.getFullYear() + '-' + (date.getMonth()+1) + '-'+ date.getDate()}})
+              let date = new Date(allCommits.data[i].commit.author.date)
+              data = {}
+              let month = date.getUTCMonth()
+              if (month < 10)
+              {
+                month = "0" + month
+              }
+              let day = date.getUTCDay()
+              if (day < 10)
+              {
+                day = "0" + day
+              }
+              let commitDay = month + "-" + day
+              console.log(commitDay)
+              data[commitDay] = 1
+              //console.log(date)
+              this.consOverTime.push({name: allCommits.data[i].author.login, data: data})
+              //console.log(this.allCons)
+              console.log(this.consOverTime)
             }
             else {
               for(let j = 0; j < this.allCons.length; j++) {
@@ -183,16 +219,34 @@ export default {
                     this.allCons[j][1] = this.allCons[j][1] + 1
                   }
               }
-              // for(let j = 0; j < this.consOverTime.length; j++) {
-              //   if(allCommits.data[i].author.login == this.consOverTime[j].name)
-              //   {
-              //     let date = new Date(allCommits.data[i].commit.author.date)
-              //     this.consOverTime[j].data.add({date: date.getFullYear() + '-' + (date.getMonth()+1) + '-'+ date.getDate()})
-              //   }
-              // }
+              for(let j = 0; j < this.consOverTime.length; j++) {
+                if(allCommits.data[i].author.login == this.consOverTime[j].name)
+                {
+                  let date = new Date(allCommits.data[i].commit.author.date)
+                  let month = date.getUTCMonth()
+                  if (month < 10)
+                  {
+                    month = "0" + month
+                  }
+                  let day = date.getUTCDay()
+                  if (day < 10)
+                  {
+                     day = "0" + day
+                  }
+                let commitDay =  month + "-" + day
+                if(this.consOverTime[j].data[commitDay] >= 1)
+                {
+                  this.consOverTime[j].data[commitDay] = this.consOverTime[j].data[commitDay] + 1
+                }
+                else {
+                  this.consOverTime[j].data[commitDay] = 1
+                }
+                }
+              }
             }
           }
         }
+        //console.log(this.consOverTime)
         if (allCommits.data.length >= 30) {
           this.getTopCons(page + 1)
         }
