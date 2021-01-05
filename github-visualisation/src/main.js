@@ -4,7 +4,6 @@ import vuetify from './plugins/vuetify'
 import Chartkick from 'vue-chartkick'
 import Chart from 'chart.js'
 
-
 Vue.use(Chartkick.use(Chart))
 Vue.config.productionTip = false
 console.log(Vue.version);

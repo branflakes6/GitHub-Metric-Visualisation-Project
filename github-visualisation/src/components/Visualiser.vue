@@ -25,7 +25,9 @@
       <div>
         <scatter-chart :data="scatter" xtitle="Time" ytitle="Day of the week" :xmax="24"></scatter-chart>
       </div>
+      <d3-network :net-nodes="nodes" :net-links="links" :options="options"></d3-network>
       </v-container>
+
     </div>
 </template>
 
@@ -33,10 +35,12 @@
 
 import axios from "axios";
 import VuejsHeatmap from 'vuejs-heatmap'
+import D3Network from 'vue-d3-network'
 export default {
   name: 'Visualiser',
   components: {
-     VuejsHeatmap
+     VuejsHeatmap,
+     D3Network
     },
    methods: {
     searchBtn : function() {
@@ -48,17 +52,19 @@ export default {
       })
       .then(respone => {
       this.info = respone
+
+      //console.log(this.info)
       this.getData()
       this.getEvents()
       this.getLanguageData()
       this.getContributions()
+      //this.getNetwork()
       
       })
     },
     getData() {
       this.avatar = this.info.data.avatar_url
       this.userCard = "https://github-readme-stats.vercel.app/api?username=" + this.searchTerm;
-      //console.log(this.info.data.repos_url)    
     },
     getLanguageData() {
        axios.get(`https://api.github.com/users/${this.searchTerm}/repos?per_page=100`, {
@@ -177,6 +183,51 @@ export default {
         })
       }
     },
+    getNetwork() {
+      axios.get(`https://api.github.com/users/${this.searchTerm}/followers?per_page=20`, {
+        headers: {
+          authorization: "token " + process.env.VUE_APP_API_KEY
+        }
+      })
+      .then (response => {
+        this.nodes = []
+        this.links = []
+        //this.nodeID = 1
+        this.followers = response.data
+        console.log(this.followers.length)
+        this.nodes.push({id: 0, name: this.searchTerm})
+        for (let i = 0; i < this.followers.length; i++) {
+          this.nodes.push({id: this.followers[i].login, name: this.followers[i].login})
+          this.links.push({sid: 0, tid: this.followers[i].login, _color:'red'})
+          //this.nodeID = this.nodeID + 1
+        }
+        this.getSecondDegree()
+      })   
+    },
+    getSecondDegree() {
+      for (let i = 0; i < this.followers.length; i++) {
+          this.secondDegree = []
+           axios.get(`https://api.github.com/users/${this.followers[i].login}/followers?per_page=50`, {
+        headers: {
+          authorization: "token " + process.env.VUE_APP_API_KEY
+        }
+      })
+      .then (response => {
+        this.secondDegree = response.data
+        console.log(this.secondDegree)
+        for(let j = 0; j < this.secondDegree.length; j++)
+        {
+          if(!this.nodes.some((node) => node.name == (this.secondDegree[j].login))) 
+          {
+            this.nodes.push({id: this.secondDegree[j].login, name: this.secondDegree[j].login})
+            this.links.push({sid: this.followers[i].login, tid: this.secondDegree[j].login, _color:'red'})
+       
+          }
+        }
+        
+      })
+    }
+    },
     async getContributions() {
       console.log("here")
           const headers = {
@@ -221,7 +272,10 @@ export default {
    },
   data: () => ({
       message: "",
-      scatter: [], 
+      followers: [],
+      secondDegree: [],
+      scatter: [],
+      nodeID: 0, 
       day: null,
       hours: '',
       time: '',
@@ -240,15 +294,24 @@ export default {
       week: [],
       calendar: [],
       colors: ['#c9ecec', '#09b3af'],
-      locale: {
+      locale: 
+      {
         months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
         days: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
         No: 'No',
         on: 'on',
         Less: 'Less',
         More: 'More'
-      }
-     
+      },
+      nodes: [],
+      links: [],
+      options:
+      {
+        force: 3000,
+        nodeSize: 20,
+        nodeLabels: true,
+        linkWidth:5
+      }     
   })
 }
 </script>
