@@ -1,6 +1,8 @@
 <template> 
+ 
     <div id="Visualiser">
       <h1> GitHub API Visualiser </h1>
+      
       <v-container>
         <v-row align="center" justify="center">
          <v-col></v-col>
@@ -25,21 +27,23 @@
         </v-row>
         </div>
 
-        <div>
+        
+       <v-card class="mx-auto my-12">
+        <div class="ma-4">
        <v-row justify="center" no-gutters>
          <v-col align="center">
            <v-card width="200">
-             <p align="center"> {{message}} </p>
+             <h3 align="center"> {{message}} </h3>
              <v-img max-width="200px" :src = avatar align="center"> </v-img>
             </v-card>
-            <vuejs-heatmap :selector="'OogaBooga'" :entries="calendar" :locale="locale" :colorRange="colors" :max="25" :tooltip-unit="'Contribution'" ></vuejs-heatmap>  
+            <vue-chart-heatmap :selector="'OogaBooga'" :entries="calendar" :locale="locale" :colorRange="colors" :max="25" :tooltip-unit="'Contribution'" ></vue-chart-heatmap>  
          </v-col>
         <v-col align="left">
           <v-img max-width="600px" :src="userCard" align="center"> </v-img>
-           
         </v-col>
        </v-row>
         </div>
+
         <div>
           <d3-network :net-nodes="nodes" :net-links="links" :options="options"></d3-network>
         </div>
@@ -54,7 +58,7 @@
         <column-chart :data="commits"></column-chart>
           </v-col>
         </v-row>
-        </div>
+        </div>  
 
         <div>
         <v-row>
@@ -65,20 +69,22 @@
           <v-col></v-col>
         </v-row>
         </div>
+       </v-card>
 
       </v-container>
     </div>
+  
 </template>
 
 <script>
 
 import axios from "axios";
-import VuejsHeatmap from 'vuejs-heatmap'
+import VueChartHeatmap from 'vue-chart-heatmap'
 import D3Network from 'vue-d3-network'
 export default {
   name: 'Visualiser',
   components: {
-     VuejsHeatmap,
+     VueChartHeatmap,
      D3Network
     },
    methods: {
