@@ -1,33 +1,72 @@
 <template> 
     <div id="Visualiser">
-      <v-container>
       <h1> GitHub API Visualiser </h1>
-      <input v-model="message" placeholder="userName">
-      <p>Search GitHub for {{ message }} ?</p>  
-      <button v-on:click="searchBtn">Yes!</button>
-      <p>Searching for {{searchTerm}}</p>
-      <v-card-title class="justify-center">
-      <v-img max-width="200px" :src = avatar align="center"> </v-img>
-      </v-card-title>
-      <v-img max-width="800px" :src="userCard"> </v-img>
-      <div>
-        <p> Top Languages by Number of Repos </p>
-        <column-chart :data="languages"></column-chart>
-      </div>
-      <div>
-        <p> Top Languages by Number of commits </p>
-        <column-chart :data="commits"></column-chart>
-      </div>
-      <div>
-        <p> Heres a heatmap for you to look at </p>
-        <vuejs-heatmap :selector="'OogaBooga'" :entries="calendar" :locale="locale" :colorRange="colors" :max="25" :tooltip-unit="'Contribution'" ></vuejs-heatmap> 
-      </div>
-      <div>
-        <scatter-chart :data="scatter" xtitle="Time" ytitle="Day of the week" :xmax="24"></scatter-chart>
-      </div>
-      <d3-network :net-nodes="nodes" :net-links="links" :options="options"></d3-network>
+      <v-container>
+        <v-row align="center" justify="center">
+         <v-col></v-col>
+          <v-col>
+          <p> Enter a user name to search for:
+            <v-text-field v-model="message" placeholder="userName" > </v-text-field>
+          </p>
+            <v-btn v-on:click="searchBtn" elevation="1">Search</v-btn>
+        </v-col>
+          <v-col></v-col>
+       </v-row>
       </v-container>
 
+      <v-container v-if="display">
+        <div>
+        <v-row align="center" justify="center">
+          <v-col></v-col>
+          <v-col align="center">
+            
+          </v-col> <v-col> 
+          </v-col>
+        </v-row>
+        </div>
+
+        <div>
+       <v-row justify="center" no-gutters>
+         <v-col align="center">
+           <v-card width="200">
+             <p align="center"> {{message}} </p>
+             <v-img max-width="200px" :src = avatar align="center"> </v-img>
+            </v-card>
+            <vuejs-heatmap :selector="'OogaBooga'" :entries="calendar" :locale="locale" :colorRange="colors" :max="25" :tooltip-unit="'Contribution'" ></vuejs-heatmap>  
+         </v-col>
+        <v-col align="left">
+          <v-img max-width="600px" :src="userCard" align="center"> </v-img>
+           
+        </v-col>
+       </v-row>
+        </div>
+        <div>
+          <d3-network :net-nodes="nodes" :net-links="links" :options="options"></d3-network>
+        </div>
+        <div>
+        <v-row>
+          <v-col>
+        <p> Top Languages by Number of Repos </p>
+        <column-chart :data="languages"></column-chart>
+          </v-col>
+          <v-col>
+        <p> Top Languages by Number of commits </p>
+        <column-chart :data="commits"></column-chart>
+          </v-col>
+        </v-row>
+        </div>
+
+        <div>
+        <v-row>
+          <v-col></v-col>
+           <v-col :cols="6">
+              <scatter-chart :data="scatter" xtitle="Time" ytitle="Day of the week" :xmax="24"></scatter-chart>
+            </v-col>
+          <v-col></v-col>
+        </v-row>
+        </div>
+
+      </v-container>
     </div>
 </template>
 
@@ -45,6 +84,7 @@ export default {
    methods: {
     searchBtn : function() {
       this.searchTerm = this.message
+      this.display = true
         axios.get(`https://api.github.com/users/${this.searchTerm}`, {
         headers: {
           authorization: "token " + process.env.VUE_APP_API_KEY
@@ -58,7 +98,7 @@ export default {
       this.getEvents()
       this.getLanguageData()
       this.getContributions()
-      //this.getNetwork()
+      this.getNetwork()
       
       })
     },
@@ -272,6 +312,7 @@ export default {
    },
   data: () => ({
       message: "",
+      display: false,
       followers: [],
       secondDegree: [],
       scatter: [],
@@ -307,10 +348,10 @@ export default {
       links: [],
       options:
       {
-        force: 3000,
-        nodeSize: 20,
+        force: 400,
+        nodeSize: 10,
         nodeLabels: true,
-        linkWidth:5
+        linkWidth:4
       }     
   })
 }
