@@ -22,7 +22,7 @@ The drop-down menu is used to specifiy if you are looking for a User or a Reposi
 
 If a valid username is inputed and the "Users" drop-down is selected you will be taken to the user page,  here you will see various graphs about the user you searched for. 
 
-![userPage](Image/userPage.gif)
+![userPage](Images/userPage.gif)
 
 The first information presented is the userName and Avatar of the user, as well as a card of some of their GitHub stats.
 
