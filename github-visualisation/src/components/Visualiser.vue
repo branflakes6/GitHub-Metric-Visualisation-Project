@@ -20,7 +20,10 @@
       </div>
       <div>
         <p> Heres a heatmap for you to look at </p>
-        <vuejs-heatmap :selector="'OogaBooga'" :entries="calendar" :locale="locale" :colorRange="colors" :max="50"  ></vuejs-heatmap> 
+        <vuejs-heatmap :selector="'OogaBooga'" :entries="calendar" :locale="locale" :colorRange="colors" :max="25" :tooltip-unit="'Contribution'" ></vuejs-heatmap> 
+      </div>
+      <div>
+        <scatter-chart :data="scatter" xtitle="Time" ytitle="Day of the week" :xmax="24"></scatter-chart>
       </div>
       </v-container>
     </div>
@@ -46,7 +49,8 @@ export default {
       .then(respone => {
       this.info = respone
       this.getData()
-      //this.getLanguageData()
+      this.getEvents()
+      this.getLanguageData()
       this.getContributions()
       
       })
@@ -84,6 +88,53 @@ export default {
         }
         this.getCommitData()
       })
+  },
+  getEvents() {
+    this.pageNum = 0
+    this.scatter = []
+  for(let i = 0; i < 10; i++) {
+    this.pageNum = this.pageNum + 1
+    axios.get(`https://api.github.com/users/${this.searchTerm}/events?page=${this.pageNum}`, {
+         headers: {
+           authorization: "token " + process.env.VUE_APP_API_KEY
+        }, timeout:10000
+       })
+       .then (response => {
+         for( let j = 0; j < response.data.length; j++) {
+          
+            this.date = new Date (response.data[j].created_at)
+            this.day = this.date.getDay()
+            // switch(this.day)
+            // {
+            //   case 0:
+            //     this.day = "Monday"
+            //     break;
+            //   case 1:
+            //     this.day = "Tuesday"
+            //     break;
+            //   case 2:
+            //     this.day = "Monday"
+            //     break;
+            //   case 3:
+            //     this.day = "Wednesday"
+            //     break;
+            //   case 4:
+            //     this.day = "Friday"
+            //     break;
+            //   case 5:
+            //     this.day = "Saturday"
+            //     break;
+            //   case 6:
+            //     this.day = "Sunday"
+            //     break;
+            // }
+            this.hours = this.date.getHours()
+            this.time = this.date.getHours() + '.' + this.date.getMinutes() + '.' + this.date.getSeconds()
+            this.scatter.push([this.time, this.day,])
+         }
+       })
+    }
+    console.log(this.scatter)
   },
   getCommitData() {
         this.commits = []
@@ -155,6 +206,7 @@ export default {
       }
     const response = await fetch('https://api.github.com/graphql', { method: 'POST', body: JSON.stringify(body), headers: headers })
     const data = await response.json()
+    console.log(data)
     this.weeks = data.data.user.contributionsCollection.contributionCalendar.weeks
     this.calendar = []
     for(let i = 0; i < this.weeks.length; i++)
@@ -168,7 +220,15 @@ export default {
     }
    },
   data: () => ({
-      message: "", 
+      message: "",
+      scatter: [], 
+      day: null,
+      hours: '',
+      time: '',
+      date: '',
+      loop: false,
+      pageNum: 1,
+      pageSize: 0,
       searchTerm:"", 
       info: null,
       repoInfo: null,
@@ -188,6 +248,7 @@ export default {
         Less: 'Less',
         More: 'More'
       }
+     
   })
 }
 </script>
