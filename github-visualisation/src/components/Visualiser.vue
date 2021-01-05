@@ -37,7 +37,7 @@
         <v-card  width="230" style ="margin: 3rem">
              <h3 align="center"> {{searchTerm}} </h3>
              <v-img max-width="230px" :src = avatar align="center" > </v-img>
-            </v-card>  
+        </v-card>  
         <v-col></v-col>
       </v-row>
         <v-row>
@@ -54,9 +54,13 @@
       </div>
 
       <div>
-          <h2>Network Graph </h2>
+          <h2 align="center">Network Graph </h2>
           <p> Red Lines indicate followers of this user</p>   
-          <d3-network :net-nodes="nodes" :net-links="links" :options="options"></d3-network>
+          <d3-network align="center" :net-nodes="nodes" :net-links="links" :options="options"></d3-network>
+        </div>
+        <div  style ="margin: 3rem">
+        <h3> Users most popular languages by repositories size </h3>
+        <pie-chart :data="languageSize" :donut="true"></pie-chart>
         </div>
         <div  style ="margin: 3rem">
         <v-row >
@@ -95,9 +99,37 @@
         <v-col>
        <pie-chart :data="allCons" :donut="true"></pie-chart>
         </v-col>
+
       </v-row>
 
-      <h2>Top three Users </h2>
+         <h2 align="center">Top three Users </h2>
+      <v-row>
+        <v-col align="center">
+          <v-card width="150" style ="margin: 3rem">
+            <h3> {{topFive[1][0].toString()}}</h3>
+            <v-img :max-width="150" :src='topFivePics[1].toString()'> </v-img>
+          </v-card>
+        </v-col> 
+        <v-col align="center">
+          <v-card width="150" style ="margin: 3rem">
+            <h3> {{topFive[0][0].toString()}}</h3>
+            <v-img :max-width="150" :src='topFivePics[0].toString()'> </v-img>
+          </v-card>
+        </v-col>
+        <v-col align="center">
+          <v-card width="150" style ="margin: 3rem">
+            <h3> {{topFive[2][0].toString()}}</h3>
+            <v-img :max-width="150" :src='topFivePics[2].toString()'> </v-img>
+          </v-card>
+        </v-col>
+
+
+
+
+
+
+      </v-row>
+      
       <v-row style="margin: 2rem">
         <v-col>
       <column-chart :data="topFive"></column-chart>
@@ -151,10 +183,11 @@ export default {
       .then(respone => {
       this.info = respone
       this.getData()
-      this.getEvents(1)
+     this.getEvents(1)
       this.getLanguageData()
       this.getContributions()
       this.getNetwork()
+      this.getLanguageStats(1)
       })
       .catch(error => {
             this.display = false
@@ -186,6 +219,45 @@ export default {
           console.log(error)
           })
     },
+    getLanguageStats (page) {
+      this.languageSize = []
+      this.lang = []
+      axios.get(`https://api.github.com/users/${this.searchTerm}/repos?per_page=100&page=${page}`, {
+        headers: {
+          authorization: "token " + process.env.VUE_APP_API_KEY
+        }
+      })
+      .then (response => {
+       this.lang = response.data
+        console.log(this.lang)
+        for (let i = 0; i < this.lang.length; i++) {
+          if(this.lang[i].owner.login == this.searchTerm && this.lang[i].language != null)
+          {
+            //console.log(this.languageSize)
+            console.log(this.languageSize)
+            console.log(this.lang[i].language)
+            console.log(this.lang[i].size)
+            if(!this.languageSize.some(row => row.includes(this.lang[i].language))) {
+              console.log("hEre")
+              this.languageSize.push([this.lang[i].language, this.lang[i].size])
+              console.log(this.languageSize)
+            }
+            else {
+              for (let j = 0; j < this.languageSize.length; j++)
+              {
+                if(this.languageSize[j][0] == this.lang[i].language)
+              this.languageSize[j][1] = this.languageSize[j][1] + this.lang[i].size
+              }
+            }
+          }
+        }
+      console.log(this.languageSize)
+      })
+
+
+
+    },
+
     getTopCons(page) {
        axios.get(`https://api.github.com/repos/${this.searchTerm}/commits?page=${page}`, {
         headers: {
@@ -213,10 +285,8 @@ export default {
                 day = "0" + day
               }
               let commitDay = month + "-" + day
-              console.log(commitDay)
               data[commitDay] = 1
               this.consOverTime.push({name: allCommits.data[i].author.login, data: data})
-              console.log(this.consOverTime)
             }
             else {
               for(let j = 0; j < this.allCons.length; j++) {
@@ -270,11 +340,19 @@ export default {
         for(let i = 0; i < 3 && i < this.allCons.length; i++) {
           this.topFive[i] = this.allCons[i]
         }    
+        for (let i = 0; i < 3 && i < this.allCons.length; i++) {
+          axios.get(`https://api.github.com/users/${this.allCons[i][0]}`, {
+         headers: {
+           authorization: "token " + process.env.VUE_APP_API_KEY
+        }
+       }) 
+       .then(response => {
+        this.topFivePics[i] = response.data.avatar_url
+        })
+       }
     },
     getLocationData() {
       this.locations = []
-
-
     },
     getData() {
       this.avatar = this.info.data.avatar_url
@@ -356,6 +434,7 @@ export default {
          this.currentRepoCommits = response
          
          if(this.repoInfo.data[i].language != null){
+
           if(!this.commits.some(row => row.includes(this.repoInfo.data[i].language)))
           {
               for(let k = 0; k < this.currentRepoCommits.data.length; k++)
@@ -487,7 +566,9 @@ export default {
       message: "",
       errorDetect: false,
       display: false,
+      lang: [],
       select: "Users",
+      languageSize: [],
       drawRepo: false,
       followers: [],
       secondDegree: [],
