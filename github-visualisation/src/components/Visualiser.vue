@@ -28,33 +28,36 @@
         </div>
 
         
-       <v-card class="mx-auto my-12">
-        <div class="ma-4">
-       <v-row justify="center" no-gutters>
-         <v-col align="center">
-           <v-card width="200">
-             <h3 align="center"> {{message}} </h3>
-             <v-img max-width="200px" :src = avatar align="center"> </v-img>
-            </v-card>
-            <vue-chart-heatmap :selector="'OogaBooga'" :entries="calendar" :locale="locale" :colorRange="colors" :max="25" :tooltip-unit="'Contribution'" ></vue-chart-heatmap>  
-         </v-col>
-        <v-col align="left">
-          <v-img max-width="600px" :src="userCard" align="center"> </v-img>
+    <v-card class="mx-auto my-12">
+     <div class="ma-4">
+      <v-row align="center" justify="center"> 
+        <v-col align="center">
+           <v-card width="300">
+             <h3 align="center"> {{searchTerm}} </h3>
+             <v-img max-width="300px" :src = avatar align="center"> </v-img>
+            </v-card>  
         </v-col>
-       </v-row>
-        </div>
+        <v-col>
+           <v-img max-width="600px" :src="userCard" align="center"> </v-img>
+        </v-col>
+        </v-row>
+        <h2> Contributions in the last year </h2>
+            <vue-chart-heatmap :selector="'OogaBooga'" :entries="calendar" :locale="locale" :colorRange="colors" :max="25" :tooltip-unit="'Contribution'" ></vue-chart-heatmap>  
+      </div>
 
         <div>
+          <h2>Network Graph </h2>
+          <p> Red Lines indicate followers of this user</p>   
           <d3-network :net-nodes="nodes" :net-links="links" :options="options"></d3-network>
         </div>
         <div>
         <v-row>
           <v-col>
-        <p> Top Languages by Number of Repos </p>
+        <h2> Top languages by number of repositories </h2>
         <column-chart :data="languages"></column-chart>
           </v-col>
           <v-col>
-        <p> Top Languages by Number of commits </p>
+        <h2> Top languages by number of commits </h2>
         <column-chart :data="commits"></column-chart>
           </v-col>
         </v-row>
@@ -64,6 +67,7 @@
         <v-row>
           <v-col></v-col>
            <v-col :cols="6">
+             <h2> Commit Times </h2>
               <scatter-chart :data="scatter" xtitle="Time" ytitle="Day of the week" :xmax="24"></scatter-chart>
             </v-col>
           <v-col></v-col>
@@ -266,7 +270,7 @@ export default {
           if(!this.nodes.some((node) => node.name == (this.secondDegree[j].login))) 
           {
             this.nodes.push({id: this.secondDegree[j].login, name: this.secondDegree[j].login})
-            this.links.push({sid: this.followers[i].login, tid: this.secondDegree[j].login, _color:'red'})
+            this.links.push({sid: this.followers[i].login, tid: this.secondDegree[j].login, _color:'#'+(Math.random()*0xFFFFFF<<0).toString(16)})
        
           }
         }
@@ -340,7 +344,7 @@ export default {
       currentRepoCommits:"",
       week: [],
       calendar: [],
-      colors: ['#c9ecec', '#09b3af'],
+      colors: ['#f9fcf8', '#4cbc19'],
       locale: 
       {
         months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
