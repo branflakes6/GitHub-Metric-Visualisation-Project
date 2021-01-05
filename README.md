@@ -13,7 +13,12 @@ Then open a terminal and enter the following:
 
 # Overview 
 ## Search Bar
-The search bar provides the ability to search for either a users account or a specific repository
-The top input box accepts an input from the user
-The drop-down menu is used to specifiy if you are looking for a User or a Repository
+The search bar provides the ability to search for either a users account or a specific repository.
+The top input box accepts an input from the user.
+The drop-down menu is used to specifiy if you are looking for a User or a Repository.
+
+!(images/search.gif)
+## User Page
+
+
 
