@@ -26,32 +26,37 @@
           </v-col>
         </v-row>
         </div>
-
-        
-    <v-card class="mx-auto my-12">
+       
+    <v-card > 
      <div class="ma-4">
-      <v-row align="center" justify="center"> 
-        <v-col align="center">
-           <v-card width="300">
+      <v-row align="center" justify="center" class = "ma-8"> 
+        <v-col align="center">  </v-col>
+        <v-card  width="230" style ="margin: 3rem">
              <h3 align="center"> {{searchTerm}} </h3>
-             <v-img max-width="300px" :src = avatar align="center"> </v-img>
+             <v-img max-width="230px" :src = avatar align="center" > </v-img>
             </v-card>  
-        </v-col>
-        <v-col>
-           <v-img max-width="600px" :src="userCard" align="center"> </v-img>
-        </v-col>
-        </v-row>
+        <v-col></v-col>
+      </v-row>
+        <v-row>
+          <v-col></v-col>
+           <v-col>  
+            <v-img max-width="600px" :src="userCard" align="center"> </v-img>
+           </v-col>
+          <v-col></v-col>
+        </v-row>   
+        <div  style ="margin: 3rem"> 
         <h2> Contributions in the last year </h2>
-            <vue-chart-heatmap :selector="'OogaBooga'" :entries="calendar" :locale="locale" :colorRange="colors" :max="25" :tooltip-unit="'Contribution'" ></vue-chart-heatmap>  
+            <vue-chart-heatmap :selector="'OogaBooga'" :entries="calendar" :locale="locale" :colorRange="colors" :max="25" :tooltip-unit="'Contribution' " ></vue-chart-heatmap>  
+        </div>
       </div>
 
-        <div>
+      <div>
           <h2>Network Graph </h2>
           <p> Red Lines indicate followers of this user</p>   
           <d3-network :net-nodes="nodes" :net-links="links" :options="options"></d3-network>
         </div>
-        <div>
-        <v-row>
+        <div  style ="margin: 3rem">
+        <v-row >
           <v-col>
         <h2> Top languages by number of repositories </h2>
         <column-chart :data="languages"></column-chart>
@@ -61,9 +66,9 @@
         <column-chart :data="commits"></column-chart>
           </v-col>
         </v-row>
-        </div>  
+      </div>  
 
-        <div>
+      <div>
         <v-row>
           <v-col></v-col>
            <v-col :cols="6">
@@ -74,7 +79,6 @@
         </v-row>
         </div>
        </v-card>
-
       </v-container>
     </div>
   
@@ -103,7 +107,7 @@ export default {
       .then(respone => {
       this.info = respone
 
-      //console.log(this.info)
+      console.log(this.info)
       this.getData()
       this.getEvents()
       this.getLanguageData()
@@ -160,37 +164,12 @@ export default {
           
             this.date = new Date (response.data[j].created_at)
             this.day = this.date.getDay()
-            // switch(this.day)
-            // {
-            //   case 0:
-            //     this.day = "Monday"
-            //     break;
-            //   case 1:
-            //     this.day = "Tuesday"
-            //     break;
-            //   case 2:
-            //     this.day = "Monday"
-            //     break;
-            //   case 3:
-            //     this.day = "Wednesday"
-            //     break;
-            //   case 4:
-            //     this.day = "Friday"
-            //     break;
-            //   case 5:
-            //     this.day = "Saturday"
-            //     break;
-            //   case 6:
-            //     this.day = "Sunday"
-            //     break;
-            // }
             this.hours = this.date.getHours()
             this.time = this.date.getHours() + '.' + this.date.getMinutes() + '.' + this.date.getSeconds()
             this.scatter.push([this.time, this.day,])
          }
        })
     }
-    console.log(this.scatter)
   },
   getCommitData() {
         this.commits = []
@@ -242,14 +221,11 @@ export default {
       .then (response => {
         this.nodes = []
         this.links = []
-        //this.nodeID = 1
         this.followers = response.data
-        console.log(this.followers.length)
         this.nodes.push({id: 0, name: this.searchTerm})
         for (let i = 0; i < this.followers.length; i++) {
           this.nodes.push({id: this.followers[i].login, name: this.followers[i].login})
           this.links.push({sid: 0, tid: this.followers[i].login, _color:'red'})
-          //this.nodeID = this.nodeID + 1
         }
         this.getSecondDegree()
       })   
@@ -264,7 +240,7 @@ export default {
       })
       .then (response => {
         this.secondDegree = response.data
-        console.log(this.secondDegree)
+
         for(let j = 0; j < this.secondDegree.length; j++)
         {
           if(!this.nodes.some((node) => node.name == (this.secondDegree[j].login))) 
@@ -279,7 +255,6 @@ export default {
     }
     },
     async getContributions() {
-      console.log("here")
           const headers = {
           'Authorization': `bearer ${process.env.VUE_APP_API_KEY}`,
           }
@@ -307,7 +282,6 @@ export default {
       }
     const response = await fetch('https://api.github.com/graphql', { method: 'POST', body: JSON.stringify(body), headers: headers })
     const data = await response.json()
-    console.log(data)
     this.weeks = data.data.user.contributionsCollection.contributionCalendar.weeks
     this.calendar = []
     for(let i = 0; i < this.weeks.length; i++)
@@ -317,7 +291,6 @@ export default {
       }
       
     }
-    console.log(this.calendar)
     }
    },
   data: () => ({
@@ -361,7 +334,7 @@ export default {
         force: 400,
         nodeSize: 10,
         nodeLabels: true,
-        linkWidth:4
+        linkWidth:3
       }     
   })
 }
