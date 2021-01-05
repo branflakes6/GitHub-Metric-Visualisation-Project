@@ -1,22 +1,22 @@
 <template> 
   <v-app>
     <div id="Visualiser">
-      <h1> GitHub API Visualiser </h1>
-      
-      <v-container>
-        
+      <h1> GitHub API Visualiser </h1>   
+      <v-container>   
         <v-row align="center" justify="center">
          <v-col></v-col>
           <v-col>
           <p> Enter a user name to search for:  </p>
             <v-text-field v-model="message" placeholder="userName or userName/repoName" > </v-text-field>
-           
-               <v-select data-app :items="items" v-model="select" label="Users or Repos"> </v-select>  
-             
+               <v-select data-app :items="items" v-model="select" label="Users or Repos"> </v-select>   
            <v-btn v-on:click="searchBtn" elevation="1">Search</v-btn>
         </v-col>
           <v-col></v-col>
        </v-row>
+      </v-container>
+
+      <v-container v-if="errorDetect">
+        <h1> AN ERROR HAS OCCOURED PLEASE TRY AGAIN </h1>
       </v-container>
 
       <v-container v-if="display">
@@ -141,6 +141,7 @@ export default {
       this.searchTerm = this.message
       this.display = true
       this.drawRepo = false
+      this.errorDetect = false
       this.scatter = []
         axios.get(`https://api.github.com/users/${this.searchTerm}`, {
         headers: {
@@ -158,6 +159,7 @@ export default {
       .catch(error => {
             this.display = false
             this.drawRepo = false
+            this.errorDetect = true
             console.log(error)
           })
     },
@@ -165,6 +167,7 @@ export default {
       this.searchTerm = this.message
       this.drawRepo = true
       this.display = false
+      this.errorDetect = false
       this.allCons = []
       this.consOverTime = []
        axios.get(`https://api.github.com/repos/${this.searchTerm}`, {
@@ -179,6 +182,7 @@ export default {
       .catch(error => {
           this.display = false
           this.drawRepo = false
+          this.errorDetect = true
           console.log(error)
           })
     },
@@ -257,6 +261,7 @@ export default {
         .catch(error => {
             this.display = false
             this.drawRepo = false
+            this.errorDetect = true
             console.log(error)
           })
     },
@@ -307,6 +312,7 @@ export default {
         .catch(error => {
             this.display = false
             this.drawRepo = false
+            this.errorDetect = true
             console.log(error)
           })
   },
@@ -334,6 +340,7 @@ export default {
          .catch(error => {
             this.display = false
             this.drawRepo = false
+            this.errorDetect = true
             console.log(error)
           })     
   },
@@ -379,6 +386,7 @@ export default {
           .catch(error => {
             this.display = false
             this.drawRepo = false
+            this.errorDetect = true
             console.log(error)
           })
       }
@@ -403,6 +411,7 @@ export default {
         .catch(error => {
             this.display = false
             this.drawRepo = false
+            this.errorDetect = true
             console.log(error)
           })  
     },
@@ -430,6 +439,7 @@ export default {
         .catch(error => {
             this.display = false
             this.drawRepo = false
+            this.errorDetect = true
             console.log(error)
           })
     }
@@ -475,8 +485,9 @@ export default {
    },
   data: () => ({
       message: "",
+      errorDetect: false,
       display: false,
-      select: "",
+      select: "Users",
       drawRepo: false,
       followers: [],
       secondDegree: [],
