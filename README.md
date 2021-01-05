@@ -8,5 +8,6 @@ In the Dockerfile add your personal GitHub API key to the following line:
 Then open a terminal and enter the following:
 
 > docker build -t <your_image_name> .
+
 > docker run -it -p 8080:8080 --rm <your_image_name>
->
+
