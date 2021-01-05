@@ -85,9 +85,10 @@
       </v-container>
 
      <v-container v-if="drawRepo">
-
+       <h2> Commits over time </h2> 
        <line-chart :data="consOverTime" :borderDash="12"></line-chart>
-      <v-row>
+       <h2> Users by number of commits </h2>
+      <v-row style="margin: 3rem">
         <v-col>
        <column-chart :data="allCons"></column-chart>
         </v-col>
@@ -96,7 +97,8 @@
         </v-col>
       </v-row>
 
-      <v-row>
+      <h2>Top three Users </h2>
+      <v-row style="margin: 2rem">
         <v-col>
       <column-chart :data="topFive"></column-chart>
         </v-col>
@@ -104,21 +106,19 @@
        <pie-chart :data="topFive" :donut="true"></pie-chart>
         </v-col>
       </v-row>
-      <geo-chart></geo-chart>
+      <!-- <geo-chart adapter="google"></geo-chart> -->
      </v-container>
     </div>
     </v-app>
 </template>
 
-<script src="https://www.gstatic.com/charts/loader.js"></script>
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"> 
-     </script>
-     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-<script>
 
+
+<script>
 import axios from "axios";
 import VueChartHeatmap from 'vue-chart-heatmap'
 import D3Network from 'vue-d3-network'
+
 export default {
   name: 'Visualiser',
   components: {
@@ -154,8 +154,12 @@ export default {
       this.getLanguageData()
       this.getContributions()
       this.getNetwork()
-      
       })
+      .catch(error => {
+            this.display = false
+            this.drawRepo = false
+            console.log(error)
+          })
     },
     searchBtnRepo () {
       this.searchTerm = this.message
@@ -170,27 +174,27 @@ export default {
       })
       .then (response => {
         this.info = response
-        //console.log(this.info)
         this.getTopCons(1)
-        //console.log(this.allCons)
-        //console.log(this.consOverTime)
-
       })
+      .catch(error => {
+          this.display = false
+          this.drawRepo = false
+          console.log(error)
+          })
     },
     getTopCons(page) {
        axios.get(`https://api.github.com/repos/${this.searchTerm}/commits?page=${page}`, {
         headers: {
           authorization: "token " + process.env.VUE_APP_API_KEY
         }
-      }).then (response => {
+      })
+      .then (response => {
         let allCommits = response
-         //console.log(allCommits)
          let data = {}
         for(let i = 0; i < allCommits.data.length; i++) {
           
           if(allCommits.data[i].author != null) {
             if(!this.allCons.some(row => row.includes(allCommits.data[i].author.login))) {
-              //console.log(allCommits.data[i].author.avatar_url)
               this.allCons.push([allCommits.data[i].author.login, 1, allCommits.data[i].author.avatar_url])
               let date = new Date(allCommits.data[i].commit.author.date)
               data = {}
@@ -207,9 +211,7 @@ export default {
               let commitDay = month + "-" + day
               console.log(commitDay)
               data[commitDay] = 1
-              //console.log(date)
               this.consOverTime.push({name: allCommits.data[i].author.login, data: data})
-              //console.log(this.allCons)
               console.log(this.consOverTime)
             }
             else {
@@ -246,14 +248,17 @@ export default {
             }
           }
         }
-        //console.log(this.consOverTime)
         if (allCommits.data.length >= 30) {
           this.getTopCons(page + 1)
         }
-        //this.getLocationData()
          this.allCons.sort((a, b) => (a[1] > b[1]) ? -1 : (b[1] > a[1]) ? 1 : 0);
          this.getTopFive()
       })
+        .catch(error => {
+            this.display = false
+            this.drawRepo = false
+            console.log(error)
+          })
     },
     getTopFive() {
       this.topFive = []
@@ -263,8 +268,6 @@ export default {
     },
     getLocationData() {
       this.locations = []
-
-
 
 
     },
@@ -301,6 +304,11 @@ export default {
         }
         this.getCommitData()
       })
+        .catch(error => {
+            this.display = false
+            this.drawRepo = false
+            console.log(error)
+          })
   },
   getEvents(pageNum) {
     axios.get(`https://api.github.com/users/${this.searchTerm}/events?per_page=100&page=${pageNum}`, {
@@ -322,7 +330,12 @@ export default {
        {
          this.getEvents(pageNum + 1)
        }
-       })      
+       }) 
+         .catch(error => {
+            this.display = false
+            this.drawRepo = false
+            console.log(error)
+          })     
   },
   getCommitData() {
         this.commits = []
@@ -363,6 +376,11 @@ export default {
           }
          }
         })
+          .catch(error => {
+            this.display = false
+            this.drawRepo = false
+            console.log(error)
+          })
       }
     },
     getNetwork() {
@@ -381,7 +399,12 @@ export default {
           this.links.push({sid: 0, tid: this.followers[i].login, _color:'red'})
         }
         this.getSecondDegree()
-      })   
+      }) 
+        .catch(error => {
+            this.display = false
+            this.drawRepo = false
+            console.log(error)
+          })  
     },
     getSecondDegree() {
       for (let i = 0; i < this.followers.length; i++) {
@@ -402,9 +425,13 @@ export default {
             this.links.push({sid: this.followers[i].login, tid: this.secondDegree[j].login, _color:'#'+(Math.random()*0xFFFFFF<<0).toString(16)})
        
           }
-        }
-        
+        }     
       })
+        .catch(error => {
+            this.display = false
+            this.drawRepo = false
+            console.log(error)
+          })
     }
     },
     async getContributions() {
@@ -491,7 +518,7 @@ export default {
       links: [],
       options:
       {
-        force: 400,
+        force: 300,
         nodeSize: 10,
         nodeLabels: true,
         linkWidth:3

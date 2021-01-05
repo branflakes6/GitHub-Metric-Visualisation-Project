@@ -5,6 +5,8 @@
   </div>
 </template>
 
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js">  </script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 
 <script>
 import Visualiser from './components/Visualiser.vue'

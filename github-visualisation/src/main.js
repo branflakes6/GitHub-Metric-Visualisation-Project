@@ -5,7 +5,7 @@ import Chartkick from 'vue-chartkick'
 import Chart from 'chart.js'
 
 Vue.use(Chartkick.use(Chart))
-Vue.use(Chartkick)
+
 Vue.config.productionTip = false
 console.log(Vue.version);
 
