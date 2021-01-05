@@ -10,7 +10,7 @@
           <p> Enter a user name to search for:
             <v-text-field v-model="message" placeholder="userName" > </v-text-field>
           </p>
-            <v-btn v-on:click="searchBtn" elevation="1">Search</v-btn>
+            <v-btn v-on:click="searchBtnRepo" elevation="1">Search</v-btn>
         </v-col>
           <v-col></v-col>
        </v-row>
@@ -80,6 +80,14 @@
         </div>
        </v-card>
       </v-container>
+
+     <v-container v-if="drawRepo">
+       <column-chart :data="allCons"></column-chart>
+       <pie-chart :data="allCons"></pie-chart>
+
+      <column-chart :data="topFive"></column-chart>
+       <pie-chart :data="topFive"></pie-chart>
+     </v-container>
     </div>
 </template>
 
@@ -95,9 +103,10 @@ export default {
      D3Network
     },
    methods: {
-    searchBtn : function() {
+    searchBtnUser : function() {
       this.searchTerm = this.message
       this.display = true
+      this.scatter = []
         axios.get(`https://api.github.com/users/${this.searchTerm}`, {
         headers: {
           authorization: "token " + process.env.VUE_APP_API_KEY
@@ -105,20 +114,101 @@ export default {
       })
       .then(respone => {
       this.info = respone
-
-      //console.log(this.info)
-      //this.getData()
+      this.getData()
       this.getEvents(1)
-      //this.getLanguageData()
-      //this.getContributions()
-      //this.getNetwork()
+      this.getLanguageData()
+      this.getContributions()
+      this.getNetwork()
       
       })
+    },
+    searchBtnRepo : function () {
+      this.searchTerm = this.message
+      this.drawRepo = true
+      this.allCons = []
+      this.consOverTime = []
+       axios.get(`https://api.github.com/repos/${this.searchTerm}`, {
+        headers: {
+          authorization: "token " + process.env.VUE_APP_API_KEY
+        }
+      })
+      .then (response => {
+        this.info = response
+        //console.log(this.info)
+        this.getTopCons(1)
+        console.log(this.allCons)
+        //console.log(this.consOverTime)
+
+      })
+    },
+    getTopCons(page) {
+       axios.get(`https://api.github.com/repos/${this.searchTerm}/commits?page=${page}`, {
+        headers: {
+          authorization: "token " + process.env.VUE_APP_API_KEY
+        }
+      }).then (response => {
+        let allCommits = response
+         //console.log(allCommits)
+        for(let i = 0; i < allCommits.data.length; i++) {
+   
+          if(allCommits.data[i].author != null) {
+            if(!this.allCons.some(row => row.includes(allCommits.data[i].author.login))) {
+              this.allCons.push([allCommits.data[i].author.login, 1])
+              //let date = new Date(allCommits.data[i].commit.author.date)
+              //this.consOverTime.push({name: allCommits.data[i].author.login, data: {date: date.getFullYear() + '-' + (date.getMonth()+1) + '-'+ date.getDate()}})
+            }
+            else {
+              for(let j = 0; j < this.allCons.length; j++) {
+                  if(allCommits.data[i].author.login == this.allCons[j][0])
+                  {
+                    this.allCons[j][1] = this.allCons[j][1] + 1
+                  }
+              }
+              // for(let j = 0; j < this.consOverTime.length; j++) {
+              //   if(allCommits.data[i].author.login == this.consOverTime[j].name)
+              //   {
+              //     let date = new Date(allCommits.data[i].commit.author.date)
+              //     this.consOverTime[j].data.add({date: date.getFullYear() + '-' + (date.getMonth()+1) + '-'+ date.getDate()})
+              //   }
+              // }
+            }
+          }
+        }
+        if (allCommits.data.length >= 30) {
+          this.getTopCons(page + 1)
+        }
+        //this.getLocationData()
+         this.allCons.sort((a, b) => (a[1] > b[1]) ? -1 : (b[1] > a[1]) ? 1 : 0);
+         this.getTopFive()
+      })
+    },
+    // getTopFive() {
+    //   this.topFive = []
+    //     for(let i = 0; i < 3 || this.allCons.length; i++) {
+    //       this.topFive[i] = this.allCons[i]
+    //     }
+    //     for(let i = 0; i < this.topFive.length; i++) {
+    //       axios.get(`https://api.github.com/users/${this.topFive[i]}`, {
+    //     headers: {
+    //       authorization: "token " + process.env.VUE_APP_API_KEY
+    //     }
+    //   }) .then (response => {
+    //     console.log(response)
+    //       //this.topFivePics.push(response)
+    //   }) 
+    //   }
+    // },
+    getLocationData() {
+      this.locations = []
+
+
+
+
     },
     getData() {
       this.avatar = this.info.data.avatar_url
       this.userCard = "https://github-readme-stats.vercel.app/api?username=" + this.searchTerm;
-      this.scatter = []
+      
     },
     getLanguageData() {
        axios.get(`https://api.github.com/users/${this.searchTerm}/repos?per_page=100`, {
@@ -150,16 +240,12 @@ export default {
       })
   },
   getEvents(pageNum) {
-   
-  //for(let i = 0; i < 10; i++) {
-    //this.pageNum = pageNum + 1
     axios.get(`https://api.github.com/users/${this.searchTerm}/events?per_page=100&page=${pageNum}`, {
          headers: {
            authorization: "token " + process.env.VUE_APP_API_KEY
         }, timeout:10000
        })
        .then (response => {
-         console.log(response)
          for( let j = 0; j < response.data.length; j++) {
             
             this.date = new Date (response.data[j].created_at)
@@ -169,14 +255,11 @@ export default {
             this.scatter.push([this.time, this.day,])
             
          }
-         console.log(this.scatter)
        if(response.data.length >= 100)
        {
          this.getEvents(pageNum + 1)
        }
-       })
-       
-    //}
+       })      
   },
   getCommitData() {
         this.commits = []
@@ -303,16 +386,21 @@ export default {
   data: () => ({
       message: "",
       display: false,
+      drawRepo: false,
       followers: [],
       secondDegree: [],
+      consOverTime: [],
       scatter: [],
+      locations: [],
+      topFive: [],
+      topFivePics: [],
+      allCons: [],
       nodeID: 0, 
       day: null,
       hours: '',
       time: '',
       date: '',
       loop: false,
-     // pageNum: 1,
       pageSize: 0,
       searchTerm:"", 
       info: null,
