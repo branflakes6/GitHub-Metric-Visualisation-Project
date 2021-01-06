@@ -55,5 +55,22 @@ The final graph on the userPage is a scatter plot of what times the user is acti
 the X-Axis shows the time of day from midnight to 11:59:59pm and the Y-Axis represents the days of the week labeled 0-6
 
 
+## Repository Page
+
+This page shows when a user inputs a specific repository to view. Searches must include the username of the repositories owner
+
+![repoSearch](Images/repoSearch.png)
 
 
+The main data displayed on this page is the graph of commits over time. This shows all commits to the repository by all contributors over time.
+![overTime](Images/commits.png)
+
+This Bar Chart shows the total commits of the top contributors.
+![commitBar](Images/contribs.png)
+
+The pie chart displays the same data but in a more interactive way. You can disable certain users by clicking their name and the chart will update to exclude them.
+![pieCont](Images/pieContribs.gif) 
+
+The top users section displays data about the Top Three Contributors to the repo.
+It displays their name and profile picture as well as two representations of their commits, a static bar chart and dynamic pie chart
+![topThree](Images/topThree.png)
