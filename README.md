@@ -59,7 +59,7 @@ the X-Axis shows the time of day from midnight to 11:59:59pm and the Y-Axis repr
 
 This page shows when a user inputs a specific repository to view. Searches must include the username of the repositories owner
 
-![repoSearch](Images/repoSearch.png)
+![repoSearch](Images/repoSearch.gif)
 
 
 The main data displayed on this page is the graph of commits over time. This shows all commits to the repository by all contributors over time.
