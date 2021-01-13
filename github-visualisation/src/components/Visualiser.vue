@@ -101,43 +101,37 @@
         </v-col>
 
       </v-row>
-
+      <v-container v-if="top3">
          <h2 align="center">Top three Users </h2>
       <v-row>
         <v-col align="center">
           <v-card width="150" style ="margin: 3rem">
-            <h3> {{topFive[1][0].toString()}}</h3>
-            <v-img :max-width="150" :src='topFivePics[1].toString()'> </v-img>
+            <h3> {{topThree[1][0].toString()}}</h3>
+            <v-img :max-width="150" :src='topThreePics[1].toString()'> </v-img>
           </v-card>
         </v-col> 
         <v-col align="center">
           <v-card width="150" style ="margin: 3rem">
-            <h3> {{topFive[0][0].toString()}}</h3>
-            <v-img :max-width="150" :src='topFivePics[0].toString()'> </v-img>
+            <h3> {{topThree[0][0].toString()}}</h3>
+            <v-img :max-width="150" :src='topThreePics[0].toString()'> </v-img>
           </v-card>
         </v-col>
         <v-col align="center">
           <v-card width="150" style ="margin: 3rem">
-            <h3> {{topFive[2][0].toString()}}</h3>
-            <v-img :max-width="150" :src='topFivePics[2].toString()'> </v-img>
+            <h3> {{topThree[2][0].toString()}}</h3>
+            <v-img :max-width="150" :src='topThreePics[2].toString()'> </v-img>
           </v-card>
         </v-col>
-
-
-
-
-
-
       </v-row>
-      
       <v-row style="margin: 2rem">
         <v-col>
-      <column-chart :data="topFive"></column-chart>
+      <column-chart :data="topThree"></column-chart>
         </v-col>
         <v-col>
-       <pie-chart :data="topFive" :donut="true"></pie-chart>
+       <pie-chart :data="topThree" :donut="true"></pie-chart>
         </v-col>
       </v-row>
+      </v-container>
       <!-- <geo-chart adapter="google"></geo-chart> -->
      </v-container>
     </div>
@@ -229,18 +223,11 @@ export default {
       })
       .then (response => {
        this.lang = response.data
-        console.log(this.lang)
         for (let i = 0; i < this.lang.length; i++) {
           if(this.lang[i].owner.login == this.searchTerm && this.lang[i].language != null)
           {
-            //console.log(this.languageSize)
-            console.log(this.languageSize)
-            console.log(this.lang[i].language)
-            console.log(this.lang[i].size)
             if(!this.languageSize.some(row => row.includes(this.lang[i].language))) {
-              console.log("hEre")
               this.languageSize.push([this.lang[i].language, this.lang[i].size])
-              console.log(this.languageSize)
             }
             else {
               for (let j = 0; j < this.languageSize.length; j++)
@@ -251,10 +238,7 @@ export default {
             }
           }
         }
-      console.log(this.languageSize)
       })
-
-
 
     },
 
@@ -326,7 +310,13 @@ export default {
           this.getTopCons(page + 1)
         }
          this.allCons.sort((a, b) => (a[1] > b[1]) ? -1 : (b[1] > a[1]) ? 1 : 0);
-         this.getTopFive()
+         if(this.allCons.length >= 3)
+         {
+         this.gettopThree()
+         }
+         else{
+           this.smallRepo()
+         }
       })
         .catch(error => {
             this.display = false
@@ -335,10 +325,11 @@ export default {
             console.log(error)
           })
     },
-    getTopFive() {
-      this.topFive = []
+    gettopThree() {
+      this.topThree = []
+      this.top3 = true
         for(let i = 0; i < 3 && i < this.allCons.length; i++) {
-          this.topFive[i] = this.allCons[i]
+          this.topThree[i] = this.allCons[i]
         }    
         for (let i = 0; i < 3 && i < this.allCons.length; i++) {
           axios.get(`https://api.github.com/users/${this.allCons[i][0]}`, {
@@ -347,9 +338,20 @@ export default {
         }
        }) 
        .then(response => {
-        this.topFivePics[i] = response.data.avatar_url
+        this.topThreePics[i] = response.data.avatar_url
         })
        }
+    },
+    smallRepo()
+    {
+      this.top3 = false
+      this.topThree = []
+      this.topThree[0] = ""
+      this.topThree[1] = ""
+      this.topThree[2] = ""
+      this.topThreePics[0] = ""
+      this.topThreePics[1] = ""
+      this.topThreePics[2] = ""
     },
     getLocationData() {
       this.locations = []
@@ -365,8 +367,9 @@ export default {
            authorization: "token " + process.env.VUE_APP_API_KEY
         }
        })
-         .then(respone => {
-           this.repoInfo = respone
+         .then(response => {
+           this.repoInfo = response
+           console.log(response)
            this.languages = []
           
           for (let i = 0; i < this.repoInfo.data.length; i++) {
@@ -575,8 +578,8 @@ export default {
       consOverTime: [],
       scatter: [],
       locations: [],
-      topFive: [],
-      topFivePics: [],
+      topThree: ["","",""],
+      topThreePics: ["","",""],
       allCons: [],
       nodeID: 0, 
       day: null,
